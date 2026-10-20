@@ -2,6 +2,11 @@
 
 每个版本一节，标题为 `pubspec.yaml` 中的完整版本号。发布工作流会把对应一节写入 GitHub Release 说明。
 
+## 0.2.77+87
+
+- 修复红果播放/下载全部失败（2026-10-19 起因）：单集 `/novel/player/video_model/v1/` 对评论身份签名返回 200 空响应，取流改走 `POST /novel/player/multi_video_model/preload/v1/`，请求体带 `mixed_video_id_map` + `video_platform=Mixed(1024)`，并用播放身份签名（不带评论标记），响应按 `data[video_id].video_model` 解析。
+- 新增红果取流诊断探针（`HG_PROBE=1 go test ./core/ -run TestProbeHongguoPlayback -v`），下次红果接口变动可快速定位。
+
 ## 0.2.76+86
 
 - 修复剧集封面上的追剧标记挡住「共 N 集」、看不出是否更新：标记移到集数上方，两者同时可见。
