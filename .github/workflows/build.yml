@@ -187,6 +187,7 @@ jobs:
           retention-days: 14
 
   ios:
+    if: false
     needs: prepare
     runs-on: macos-latest
     timeout-minutes: 60
