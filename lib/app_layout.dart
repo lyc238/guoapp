@@ -56,7 +56,7 @@ class AppDevice {
     if (defaultTargetPlatform != TargetPlatform.android) {
       try {
         final info = await PackageInfo.fromPlatform();
-        return AppDevice(version: info.version);
+        return AppDevice(version: info.version.split('+').first);
       } catch (_) {
         return fallback;
       }
@@ -71,7 +71,7 @@ class AppDevice {
       return AppDevice(
         television: television,
         version: version is String && version.isNotEmpty
-            ? version
+            ? version.split('+').first
             : fallback.version,
       );
     } on PlatformException {
