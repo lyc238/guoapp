@@ -199,9 +199,9 @@ func (d *Downloader) resolveHongguoMedia(ctx context.Context, task Task) (provid
 		return providerMedia{}, fmt.Errorf("红果章节 ID 无效，请重新获取章节")
 	}
 	// 红果插播广告时接口会先返回广告占位（HTTP 200 但无真实媒体，需手动
-	// 重试才出片）。HTTP 层重试不会触发，这里在业务层短延迟重试 App 通道，
-	// 通常 1-2 次即恢复；仍失败再走网页/备用兜底。
-	const appRetries = 3
+	// 重试才出片）。HTTP 层重试不会触发，这里在业务层重试 App 通道，
+	// 广告窗口可能持续数秒，共 5 次、每次间隔 1.5s（约 6s），仍失败再走网页/备用兜底。
+	const appRetries = 5
 	var nativeErr error
 	for attempt := 0; attempt < appRetries; attempt++ {
 		media, err := d.resolveHongguoAppMedia(ctx, videoID)
@@ -216,7 +216,7 @@ func (d *Downloader) resolveHongguoMedia(ctx context.Context, task Task) (provid
 			select {
 			case <-ctx.Done():
 				return providerMedia{}, ctx.Err()
-			case <-time.After(600 * time.Millisecond):
+			case <-time.After(1500 * time.Millisecond):
 			}
 		}
 	}
