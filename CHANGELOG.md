@@ -2,6 +2,10 @@
 
 每个版本一节，标题为 `pubspec.yaml` 中的完整版本号。发布工作流会把对应一节写入 GitHub Release 说明。
 
+## 0.2.78+88
+
+- 修复红果插播广告时偶发「暂时无法播放、需手动点重试」：广告占位是 HTTP 200 空数据，HTTP 层重试不触发，改为在业务层对 App 取流短延迟自动重试 3 次（每次间隔 600ms），通常 1-2 次即出片，失败再走网页/备用兜底。
+
 ## 0.2.77+87
 
 - 修复红果播放/下载全部失败（2026-10-19 起因）：单集 `/novel/player/video_model/v1/` 对评论身份签名返回 200 空响应，取流改走 `POST /novel/player/multi_video_model/preload/v1/`，请求体带 `mixed_video_id_map` + `video_platform=Mixed(1024)`，并用播放身份签名（不带评论标记），响应按 `data[video_id].video_model` 解析。
