@@ -38,6 +38,7 @@ class PlayerControls extends StatefulWidget {
     this.onRetryDanmaku,
     this.onPush,
     this.onPictureInPicture,
+    this.onToggleOrientation,
     this.enhancement,
   });
 
@@ -68,6 +69,7 @@ class PlayerControls extends StatefulWidget {
   final Future<void> Function()? onRetryDanmaku;
   final Future<void> Function()? onPush;
   final Future<void> Function()? onPictureInPicture;
+  final VoidCallback? onToggleOrientation;
   final VideoEnhancementController? enhancement;
 
   @override
@@ -806,6 +808,13 @@ class _PlayerControlsState extends State<PlayerControls> {
             : Icons.fullscreen_rounded,
         onPressed: widget.onFullscreen,
       ),
+      if (fullscreen && widget.onToggleOrientation != null)
+        _toolIcon(
+          key: const ValueKey('player-orientation'),
+          tooltip: '切换全屏方向',
+          icon: Icons.screen_rotation_alt_rounded,
+          onPressed: widget.onToggleOrientation,
+        ),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
@@ -846,6 +855,13 @@ class _PlayerControlsState extends State<PlayerControls> {
           onPressed: widget.enabled
               ? () => _panel(widget.onPictureInPicture!)
               : null,
+        ),
+      if (fullscreen && widget.onToggleOrientation != null)
+        _toolIcon(
+          key: const ValueKey('player-orientation'),
+          tooltip: '切换全屏方向',
+          icon: Icons.screen_rotation_alt_rounded,
+          onPressed: widget.onToggleOrientation,
         ),
     ];
     return Padding(

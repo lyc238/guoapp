@@ -105,6 +105,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   bool _forceOnline = false;
   bool _localFailure = false;
   bool _fullscreen = false;
+  bool _fullscreenPortrait = false;
   bool _automaticFullscreenSuppressed = false;
   bool _panelOpen = false;
   int _mobileTab = 0;
@@ -1228,11 +1229,13 @@ class _PlayerScreenState extends State<PlayerScreen>
     final fullscreen = !_showFullscreen;
     final previous = _fullscreen;
     final previousSuppressed = _automaticFullscreenSuppressed;
+    final previousPortrait = _fullscreenPortrait;
     _interactions.cancel();
     _rotating = true;
     setState(() {
       _fullscreen = fullscreen;
       _automaticFullscreenSuppressed = !fullscreen;
+      if (!fullscreen) _fullscreenPortrait = false;
     });
     try {
       if (Platform.isWindows) {
@@ -1242,12 +1245,14 @@ class _PlayerScreenState extends State<PlayerScreen>
               this,
               fullscreen: fullscreen,
               aspectRatio: _aspectRatio,
+              portrait: fullscreen && _fullscreenPortrait,
             ) ??
             SystemChrome.setPreferredOrientations(
               AppOrientationController.orientations(
                 television: _television,
                 fullscreen: fullscreen,
                 aspectRatio: _aspectRatio,
+                portrait: fullscreen && _fullscreenPortrait,
               ),
             ));
       }
@@ -1256,8 +1261,46 @@ class _PlayerScreenState extends State<PlayerScreen>
         setState(() {
           _fullscreen = previous;
           _automaticFullscreenSuppressed = previousSuppressed;
+          _fullscreenPortrait = previousPortrait;
         });
         _notice('无法切换全屏，请重试');
+      }
+    } finally {
+      _rotating = false;
+      if (mounted && !_closed) _scheduleSystemUi();
+    }
+  }
+
+  /// 全屏状态下在「横屏全屏」与「竖屏全屏」之间切换。
+  /// 手机端有效；桌面/电视无方向概念。
+  Future<void> _toggleFullscreenOrientation() async {
+    if (_rotating || _television || !_showFullscreen || !_mobile) {
+      return;
+    }
+    final portrait = !_fullscreenPortrait;
+    final previous = _fullscreenPortrait;
+    _interactions.cancel();
+    _rotating = true;
+    setState(() => _fullscreenPortrait = portrait);
+    try {
+      await (_orientationController?.setPlayback(
+            this,
+            fullscreen: true,
+            aspectRatio: _aspectRatio,
+            portrait: portrait,
+          ) ??
+          SystemChrome.setPreferredOrientations(
+            AppOrientationController.orientations(
+              television: _television,
+              fullscreen: true,
+              aspectRatio: _aspectRatio,
+              portrait: portrait,
+            ),
+          ));
+    } catch (_) {
+      if (mounted && !_closed) {
+        setState(() => _fullscreenPortrait = previous);
+        _notice('无法切换全屏方向，请重试');
       }
     } finally {
       _rotating = false;
@@ -1807,6 +1850,7 @@ class _PlayerScreenState extends State<PlayerScreen>
             onTogglePlayback: _togglePlayback,
             swipeEnabled: _mobile,
             onFullscreen: _rotate,
+            onToggleOrientation: _mobile ? _toggleFullscreenOrientation : null,
             onBack: _back,
             onFocusSurface: _playerFocus.requestFocus,
             onSeek: _seekTo,

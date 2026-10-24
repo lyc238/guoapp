@@ -21,8 +21,21 @@ class AppOrientationController {
     required bool television,
     bool fullscreen = false,
     double aspectRatio = 1,
+    bool portrait = false,
   }) {
-    if (television || fullscreen && aspectRatio >= 1) {
+    if (television) {
+      return const [
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ];
+    }
+    if (fullscreen && portrait) {
+      return const [
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ];
+    }
+    if (fullscreen && aspectRatio >= 1) {
       return const [
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
@@ -50,6 +63,7 @@ class AppOrientationController {
     Object owner, {
     required bool fullscreen,
     required double aspectRatio,
+    bool portrait = false,
   }) async {
     final previousOwner = _playbackOwner;
     final previousOrientations = _playbackOrientations;
@@ -59,6 +73,7 @@ class AppOrientationController {
         television: false,
         fullscreen: fullscreen,
         aspectRatio: aspectRatio,
+        portrait: portrait,
       );
     }
     final requested = _playbackOrientations;
